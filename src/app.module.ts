@@ -18,6 +18,8 @@ import { GedLogs } from './ged-logs/entities/ged-logs.entities';
 import { Ged } from './ged/Entities/ged.entities';
 import { CategoryModule } from './category/category.module';
 import { Category } from './category/Entities/category.entities';
+import { TagModule } from './tag/tag.module';
+import { Tag } from './tag/entities/tag.entities';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -28,7 +30,7 @@ import { Category } from './category/Entities/category.entities';
     username: process.env.DB0_username,
     password: process.env.DB0_password,
     database: process.env.DB0_database,
-    entities: [Users,Ged,GedLogs,Category],
+    entities: [Users,Ged,GedLogs,Category,Tag],
     synchronize: true,
     // logging:true
   }),
@@ -36,7 +38,8 @@ import { Category } from './category/Entities/category.entities';
     AuthModule,
     GedModule,
     GedLogsModule,
-    CategoryModule
+    CategoryModule,
+    TagModule
   ],
   controllers: [AppController],
   providers: [
