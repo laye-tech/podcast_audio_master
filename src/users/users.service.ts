@@ -57,23 +57,10 @@ export class UsersService extends TypeOrmCrudService<Users> {
 
         if (!userOcm) throw new ConflictException("L'utilisateur nexiste pas ");
 
-
-      
-        let image=await this.gedService.previewDocument({uuid:userOcm.uuid},userOcm)
-        console.log("image",image)
-         userOcm.profileImgPath=image
+        let image = await this.gedService.previewDocument({ uuid: userOcm.uuid }, userOcm)
+        userOcm.profileImgPath = image
         return userOcm
 
     }
 }
-  // return await this.usersRepository.save(user).then(async (newuser: Users) => {
-        //     let obj: any = {
-        //         libelle: `Image profil de l'utilisateur ${newuser.firstname}${newuser.name}`,
-        //         categorie: "Image Utilisateur",
-        //         fk_of_all_table: newuser.uuid,
-        //         doc_author: userConnected
-        //     }
-        //     await this.gedService.saveDocumentUrl(obj, file, userConnected)
-        //     delete newuser.password_hash;
-        //     return newuser;
-        // });
+
