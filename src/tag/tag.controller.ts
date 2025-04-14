@@ -5,7 +5,7 @@ import { Tag } from './entities/tag.entities';
 import { TagService } from './tag.service';
 
 
-@ApiTags('Category')
+@ApiTags('Tag')
 @Crud({
     model: {
         type: Tag,
