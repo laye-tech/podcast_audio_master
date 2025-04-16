@@ -1,0 +1,39 @@
+version: '3.5'
+
+services:
+  db_podcast_laye_tech:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: back_podcast_laye_tech
+    environment:
+      - PORT=2000  # ou utiliser ${PORT:-2000}
+    ports:
+      - "2000:2000"
+    depends_on:
+      - db_podcast_laye_tech
+    volumes:
+      - ./src:/app/src  # À ajuster selon ton entrypoint NestJS
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: podcast_pg_admin_laye_tech
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+    ports:
+      - "5050:80"
+    depends_on:
+      - db_podcast_laye_tech

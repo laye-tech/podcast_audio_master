@@ -1,6 +1,6 @@
 import { CreateManyDto, Crud, CrudController, CrudRequest, CrudService, GetManyDefaultResponse, Override } from '@dataui/crud';
 import { Body, Controller, Get, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Users } from './entities/users.entity';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
@@ -8,6 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @ApiTags('Users')
+@ApiBearerAuth('access-token')
 @Crud({
     model: {
         type: Users,

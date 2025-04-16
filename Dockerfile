@@ -14,6 +14,9 @@ RUN yarn build
 FROM node:18-alpine3.17 AS prod_stage
 WORKDIR /podcast_court_by_laye_tech
 
+# Copier uniquement les fichiers nécessaires à l’exécution
+COPY package*.json ./
+RUN yarn install 
 # Copie des fichiers construits et autres fichiers nécessaires
 COPY --from=build /app/dist ./dist
 COPY package*.json ./
