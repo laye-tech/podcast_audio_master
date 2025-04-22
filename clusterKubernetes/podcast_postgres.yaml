@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podpostgres
+  namespace: fari
+  labels:
+    app: podpostgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podpostgres
+  template:
+    metadata:
+      labels:
+        app: podpostgres
+    spec:
+      containers:
+      - name: podpostgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: psql-storage
+          mountPath: /var/lib/postgresql/data
+        envFrom:
+        - secretRef:
+            name: postgres-secrets
+
+      volumes:
+      - name: psql-storage
+        persistentVolumeClaim:
+          claimName: podpostgres-volume-claim
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: podpostgres
+  namespace: fari
+spec:
+  type: NodePort
+  selector:
+    app: podpostgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+    nodePort: 32300
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: podpostgres-volume
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/db_psql_0001"
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: podpostgres-volume-claim
+  namespace: fari
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
