@@ -1,11 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { Crud, CrudController } from '@dataui/crud';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GedLogs } from './entities/ged-logs.entities';
 import { GedLogsService } from './ged-logs.service';
 
 
 @ApiTags('GedLogs')
+@ApiBearerAuth('access-token')
 @Crud({
     model: {
         type: GedLogs,

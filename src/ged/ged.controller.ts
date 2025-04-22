@@ -1,7 +1,7 @@
 import { Crud, CrudController } from '@dataui/crud';
 import { Body, Controller, Post, Query, Res, UploadedFile, UseInterceptors, Get, Param, Delete, Patch, Put, Headers, Req } from '@nestjs/common';
 import { Ged } from './Entities/ged.entities';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GedService } from './ged.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -10,6 +10,7 @@ import { ErrorThrower } from 'src/errors/errorthrower.helper';
 
 
 @ApiTags('Ged')
+@ApiBearerAuth('access-token')
 @Crud({
     model: {
         type: Ged,

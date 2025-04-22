@@ -1,11 +1,12 @@
 import { Crud, CrudController } from '@dataui/crud';
 import { Controller } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Tag } from './entities/tag.entities';
 import { TagService } from './tag.service';
 
 
 @ApiTags('Tag')
+@ApiBearerAuth('access-token')
 @Crud({
     model: {
         type: Tag,
