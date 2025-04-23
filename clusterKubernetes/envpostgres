@@ -5,3 +5,4 @@ DB0_port=5432
 DB0_username="postgres"
 DB0_password="fari"
 DB0_database="podcast_db"
+POSTGRES_PASSWORD=fari

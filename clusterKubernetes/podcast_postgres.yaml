@@ -22,7 +22,10 @@ spec:
         - containerPort: 5432
         volumeMounts:
         - name: psql-storage
-          mountPath: /var/lib/postgresql/data
+          mountPath: /var/lib/postgresql/data/db-data
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/db-data
         envFrom:
         - secretRef:
             name: postgres-secrets

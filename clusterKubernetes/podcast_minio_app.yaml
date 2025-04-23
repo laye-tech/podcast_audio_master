@@ -44,14 +44,16 @@ metadata:
   name: minio
   namespace: fari
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: minio
   ports:
   - protocol: TCP
-    port: 1100
+    port: 9000
     targetPort: 9000
-    nodePort: 32200
+  - protocol: TCP
+    port: 9001
+    targetPort: 9001
 
 ---
 apiVersion: v1
