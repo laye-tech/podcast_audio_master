@@ -19,7 +19,7 @@ spec:
         - name: pgadmin
           image: dpage/pgadmin4
           ports:
-            - containerPort: 4000
+            - containerPort: 80
           env:
             - name: PGADMIN_DEFAULT_EMAIL
               value: 'admin@admin.com' # Modifie si tu veux
@@ -33,11 +33,10 @@ metadata:
   name: pgadmin
   namespace: fari
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: pgadmin
   ports:
     - protocol: TCP
       port: 4200
-      targetPort: 4000
-      nodePort: 32500
+      targetPort: 80

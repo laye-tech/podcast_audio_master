@@ -16,11 +16,15 @@ spec:
         app: podcastback
     spec:
       containers:
-      - name: podcastback
-        image: diopabdoulaye/laye_tech_podcast:latest
-        ports:
-        - containerPort: 2000
-
+        - name: podcastback
+          image: 209479292855.dkr.ecr.eu-north-1.amazonaws.com/podcast:latest
+          ports:
+            - containerPort: 2000
+          envFrom:
+            - secretRef:
+                name: postgres-secrets
+            - secretRef:
+                name: minio-secrets
 
 ---
 apiVersion: v1
@@ -33,7 +37,7 @@ spec:
   selector:
     app: podcastback
   ports:
-  - protocol: TCP
-    port: 1000
-    targetPort: 2000
-    nodePort: 32100
+    - protocol: TCP
+      port: 1000
+      targetPort: 2000
+      nodePort: 32100
