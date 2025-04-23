@@ -20,11 +20,7 @@ spec:
           image: 209479292855.dkr.ecr.eu-north-1.amazonaws.com/podcast:latest
           ports:
             - containerPort: 2000
-          envFrom:
-            - secretRef:
-                name: postgres-secrets
-            - secretRef:
-                name: minio-secrets
+       
 
 ---
 apiVersion: v1
@@ -33,11 +29,10 @@ metadata:
   name: podcastback
   namespace: fari
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: podcastback
   ports:
     - protocol: TCP
       port: 1000
       targetPort: 2000
-      nodePort: 32100
