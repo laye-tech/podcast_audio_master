@@ -71,7 +71,7 @@ export class UsersService extends TypeOrmCrudService<Users> {
 
     const userOcm = await this.usersRepository.findOneBy({ login: login });
 
-    if (!userOcm) throw new ConflictException("L'utilisateur nexiste pas ");
+    if (!userOcm) throw new ConflictException("L'utilisateur n\'existe pas ");
 
     let image = await this.gedService.previewDocument(
       { uuid: userOcm.uuid },

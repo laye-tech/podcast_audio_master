@@ -1,0 +1,138 @@
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { Podcast } from './entities/podcast.entities';
+import { TypeOrmCrudService } from '@dataui/crud-typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PodcastDto } from './DtoPodcast/podcast.dto';
+import { UsersService } from 'src/users/users.service';
+import { GedService } from 'src/ged/ged.service';
+import { CategoryService } from 'src/category/category.service';
+import { Users } from 'src/users/entities/users.entity';
+
+@Injectable()
+export class PodcastService extends TypeOrmCrudService<Podcast> {
+  private logger: Logger;
+  constructor(
+    @InjectRepository(Podcast)
+    private readonly podcastRepository: Repository<Podcast>,
+    private readonly usersService: UsersService,
+    private readonly gedService: GedService,
+    private readonly categoryService: CategoryService,
+  ) {
+    super(podcastRepository);
+    this.logger = new Logger(PodcastService.name);
+  }
+
+  async createPodcast(
+    podcast: PodcastDto,
+    file: Express.Multer.File,
+    userConnected: Omit<Users, 'password_hash'>,
+  ): Promise<Podcast> {
+    this.logger.log(`-> 🚩 Creating New Podcast [${podcast.libelle}] ⚠️...`);
+
+    const { login, firstname, name, email, profileImgPath } = userConnected;
+
+    let [userPodcast, category] = await Promise.all([
+      this.usersService.findOneBy({
+        login: login,
+      }),
+      this.categoryService.findOneBy({ uuid: podcast.category_uuid }),
+    ]);
+
+    if (!userPodcast || !category)
+      throw new ConflictException(
+        "L'utilisateur ou la categorie  n'existe pas ",
+      );
+    this.logger.log(
+      `-> 🚩 User [${userPodcast.name} - ${userPodcast.firstname}]found in database `,
+    );
+    this.logger.log(`-> 🚩 Category [${category.libelle}]found in database `);
+
+    podcast.category = category;
+    podcast.user = userPodcast;
+
+    this.logger.log(
+      `-> 🚩 Starting save in database : [${JSON.stringify(podcast)}] `,
+    );
+
+    return await this.podcastRepository
+      .save(podcast)
+      .then(async (newPodcast: Podcast) => {
+        this.logger.log(`-> Successfuly save in database`);
+
+        let obj: any = {
+          libelle: `Profil de couverture du podcast intitule : ${newPodcast.libelle}`,
+          categorie: 'Image Podcast',
+          fk_of_all_table: newPodcast.uuid,
+          doc_author: `${firstname} - ${name}`,
+        };
+        await this.gedService.saveDocumentUrl(obj, file, userConnected);
+        return newPodcast;
+      });
+  }
+
+  async getPodcastByUuid(
+    podcast: Partial<PodcastDto>,
+    userConnected?: Omit<Users, 'password_hash'>,
+  ): Promise<Podcast> {
+    this.logger.log(`-> 🚩 Getting  Podcast [${podcast.libelle}] ⚠️...`);
+
+    const existingPodcast: Podcast = await this.podcastRepository.findOneBy({
+      uuid: podcast.uuid,
+    });
+
+    if (!existingPodcast)
+      throw new ConflictException("Le podcast  n'existe pas ");
+
+    let image = await this.gedService.previewDocument(
+      { uuid: podcast.uuid },
+      userConnected,
+    );
+    this.logger.log(
+      `-> 🚩Podcast succesfully found in database [${existingPodcast.libelle}] ⚠️...`,
+    );
+
+    existingPodcast.coverImgPath = image;
+    return existingPodcast;
+  }
+
+  async getPodcastByCategorie(
+    podcast: Partial<PodcastDto>,
+    userConnected?: Omit<Users, 'password_hash'>,
+  ): Promise<Podcast[]> {
+    let allPodcastInSameCategory: Podcast[] = [];
+    this.logger.log(
+      `-> 🚩 Getting  Podcast by category_uuid [${podcast.uuid}] ⚠️...`,
+    );
+
+    const existingPodcast: Podcast[] = await this.podcastRepository.find({
+      where: {
+        category: {
+          uuid: podcast.category_uuid,
+        },
+      },
+      relations: ['category'],
+    });
+
+    if (!existingPodcast)
+      throw new ConflictException("Le podcast  n'existe pas ");
+    for (const pod of existingPodcast) {
+      let image = await this.gedService.previewDocument(
+        { uuid: pod.uuid },
+        userConnected,
+      );
+      pod.coverImgPath = image;
+      allPodcastInSameCategory.push(pod);
+    }
+
+    // let image = await this.gedService.previewDocument(
+    //   { uuid: podcast.uuid },
+    //   userConnected,
+    // );
+    this.logger.log(
+      `-> 🚩Podcast succesfully found in database [${allPodcastInSameCategory.length}] ⚠️...`,
+    );
+
+    return allPodcastInSameCategory;
+  }
+}
