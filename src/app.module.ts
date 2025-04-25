@@ -33,7 +33,7 @@ import { Tag } from './tag/entities/tag.entities';
     database: process.env.DB0_database,
     entities: [Users,Ged,GedLogs,Category,Tag],
     synchronize: true,
-    logging:true
+    // logging:true
   }),
     UsersModule,
     AuthModule,
