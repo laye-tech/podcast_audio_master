@@ -22,6 +22,8 @@ import { TagModule } from './tag/tag.module';
 import { Tag } from './tag/entities/tag.entities';
 import { PodcastModule } from './podcast/podcast.module';
 import { Podcast } from './podcast/entities/podcast.entities';
+import { EpisodeModule } from './episode/episode.module';
+import { Episode } from './episode/entities/episode.entities';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -33,7 +35,7 @@ import { Podcast } from './podcast/entities/podcast.entities';
     username: process.env.DB0_username,
     password: process.env.DB0_password,
     database: process.env.DB0_database,
-    entities: [Users,Ged,GedLogs,Category,Tag,Podcast],
+    entities: [Users,Ged,GedLogs,Category,Tag,Podcast,Episode],
     synchronize: true,
     // logging:true
   }),
@@ -43,7 +45,8 @@ import { Podcast } from './podcast/entities/podcast.entities';
     GedLogsModule,
     CategoryModule,
     TagModule,
-    PodcastModule
+    PodcastModule,
+    EpisodeModule
   ],
   controllers: [AppController],
   providers: [

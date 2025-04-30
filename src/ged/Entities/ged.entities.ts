@@ -8,6 +8,7 @@ export enum TypeDocument {
     Png = 'png',
     Jpeg = "jpeg",
     Word = 'word',
+    Audio = 'mp3/mp4',
 
 }
 

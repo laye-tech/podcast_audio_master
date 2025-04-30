@@ -8,6 +8,8 @@ import { UsersService } from 'src/users/users.service';
 import { GedService } from 'src/ged/ged.service';
 import { CategoryService } from 'src/category/category.service';
 import { Users } from 'src/users/entities/users.entity';
+import { ConfigService } from '@nestjs/config';
+import { Ged } from 'src/ged/Entities/ged.entities';
 
 @Injectable()
 export class PodcastService extends TypeOrmCrudService<Podcast> {
@@ -18,6 +20,7 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
     private readonly usersService: UsersService,
     private readonly gedService: GedService,
     private readonly categoryService: CategoryService,
+    private readonly configService: ConfigService,
   ) {
     super(podcastRepository);
     this.logger = new Logger(PodcastService.name);
@@ -71,6 +74,7 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
       });
   }
 
+  //Pour favoriser le chargement seulement a la demande
   async getPodcastByUuid(
     podcast: Partial<PodcastDto>,
     userConnected?: Omit<Users, 'password_hash'>,
@@ -84,21 +88,28 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
     if (!existingPodcast)
       throw new ConflictException("Le podcast  n'existe pas ");
 
-    let image = await this.gedService.previewDocument(
-      { uuid: podcast.uuid },
-      userConnected,
-    );
     this.logger.log(
       `-> 🚩Podcast succesfully found in database [${existingPodcast.libelle}] ⚠️...`,
     );
 
+    let documentUrl: Ged = await this.gedService.verifyDocInBaseAndMinioStorage(
+      {
+        uuid: existingPodcast.uuid,
+      },
+    );
+    let image = await this.gedService.previewDocumentWithUrlSigned(
+      documentUrl.url,
+    );
     existingPodcast.coverImgPath = image;
     return existingPodcast;
   }
 
+  //By Laye_Tech ,Ici a chaque fois que je recupere les podcast d'une categorie donnee ,je n'ai pas besoin des logs(write in table) car c'est de l'affichage 😀😀
+  //C'est ce qui explique le fait que je procede a une signature de l'image 😀😀,
+  //ce qui ne devrait pas etre le cas pour les episodes car l'action y est ,je m'ennui franchement 🤔🤔
+  
   async getPodcastByCategorie(
     podcast: Partial<PodcastDto>,
-    userConnected?: Omit<Users, 'password_hash'>,
   ): Promise<Podcast[]> {
     let allPodcastInSameCategory: Podcast[] = [];
     this.logger.log(
@@ -117,18 +128,17 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
     if (!existingPodcast)
       throw new ConflictException("Le podcast  n'existe pas ");
     for (const pod of existingPodcast) {
-      let image = await this.gedService.previewDocument(
-        { uuid: pod.uuid },
-        userConnected,
+      let documentUrl: Ged =
+        await this.gedService.verifyDocInBaseAndMinioStorage({
+          uuid: pod.uuid,
+        });
+      let image = await this.gedService.previewDocumentWithUrlSigned(
+        documentUrl.url,
       );
       pod.coverImgPath = image;
       allPodcastInSameCategory.push(pod);
     }
 
-    // let image = await this.gedService.previewDocument(
-    //   { uuid: podcast.uuid },
-    //   userConnected,
-    // );
     this.logger.log(
       `-> 🚩Podcast succesfully found in database [${allPodcastInSameCategory.length}] ⚠️...`,
     );

@@ -14,6 +14,7 @@ import {
   Get,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -64,6 +65,6 @@ export class PodcastController implements CrudController<Podcast> {
       @Body() dto: Partial<PodcastDto>,
       @Req() req,
     ): Promise<Podcast[]> {
-      return this.service.getPodcastByCategorie(dto, req.user);
+      return this.service.getPodcastByCategorie(dto);
     }
 }

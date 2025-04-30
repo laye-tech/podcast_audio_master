@@ -11,5 +11,6 @@ import { CategoryModule } from 'src/category/category.module';
   imports: [TypeOrmModule.forFeature([Podcast]), GedModule, UsersModule,CategoryModule],
   controllers: [PodcastController],
   providers: [PodcastService],
+  exports:[PodcastService]
 })
 export class PodcastModule {}
