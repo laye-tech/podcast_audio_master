@@ -7,6 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { GedDto } from './Dto/gedDto';
 import { ErrorThrower } from 'src/errors/errorthrower.helper';
+import { Public } from 'src/auth/decorators/public.routes.decorators';
 
 
 @ApiTags('Ged')
@@ -84,17 +85,22 @@ export class GedController implements CrudController<Ged> {
         return await this.service.deleteDocument(query.uuid, req.user)
     }
 
-
     @Get('preview')
     async previewDocument(
         @Query() query,
         @Res() res: Response,
         @Req() req
     ) {
-        // const { documentStream, metadata } = await this.service.previewDocument(query.uuid, req.user);
-        // res.setHeader('Content-Type', metadata.contentType);
-        // res.setHeader('Cache-Control', 'max-age=3600');
+        const { documentStream, metadata } = await this.service.previewDocument({uuid:query.uuid}, req.user);
+        res.setHeader('Content-Type', metadata.contentType);
+        res.setHeader('Content-Disposition', `inline; filename="${metadata.filename || 'document'}"`);
+
+        res.setHeader('Cache-Control', 'max-age=3600');
         // documentStream.pipe(res);
+        documentStream.pipe(res).on('error', (err) => {
+            console.error('❌ Erreur de stream :', err);
+            res.status(500).send('Erreur lors du streaming du fichier');
+          });
     }
 
     @Get('download')

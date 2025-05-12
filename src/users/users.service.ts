@@ -8,6 +8,7 @@ import { UserDto } from './dto/user.dto';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 import { GedService } from 'src/ged/ged.service';
 import { GedDto } from 'src/ged/Dto/gedDto';
+import { Ged } from 'src/ged/Entities/ged.entities';
 
 @Injectable()
 export class UsersService extends TypeOrmCrudService<Users> {
@@ -71,12 +72,17 @@ export class UsersService extends TypeOrmCrudService<Users> {
 
     const userOcm = await this.usersRepository.findOneBy({ login: login });
 
-    if (!userOcm) throw new ConflictException("L'utilisateur nexiste pas ");
+    if (!userOcm) throw new ConflictException("L'utilisateur n\'existe pas ");
 
-    let image = await this.gedService.previewDocument(
-      { uuid: userOcm.uuid },
-      userOcm,
-    );
+  
+      let documentUrl: Ged = await this.gedService.verifyDocInBaseAndMinioStorage(
+          {
+            uuid: userOcm.uuid,
+          },
+        );
+        let image = await this.gedService.previewDocumentWithUrlSigned(
+          documentUrl.url,
+        );
     userOcm.profileImgPath = image;
     return userOcm;
   }
