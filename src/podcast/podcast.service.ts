@@ -10,7 +10,9 @@ import { CategoryService } from 'src/category/category.service';
 import { Users } from 'src/users/entities/users.entity';
 import { ConfigService } from '@nestjs/config';
 import { Ged } from 'src/ged/Entities/ged.entities';
-
+import * as XLSX from 'xlsx';
+const { readFile } = require('node:fs/promises');
+const { resolve } = require('node:path');
 @Injectable()
 export class PodcastService extends TypeOrmCrudService<Podcast> {
   private logger: Logger;
@@ -107,7 +109,7 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
   //By Laye_Tech ,Ici a chaque fois que je recupere les podcast d'une categorie donnee ,je n'ai pas besoin des logs(write in table) car c'est de l'affichage 😀😀
   //C'est ce qui explique le fait que je procede a une signature de l'image 😀😀,
   //ce qui ne devrait pas etre le cas pour les episodes car l'action y est ,je m'ennui franchement 🤔🤔
-  
+
   async getPodcastByCategorie(
     podcast: Partial<PodcastDto>,
   ): Promise<Podcast[]> {
@@ -144,5 +146,84 @@ export class PodcastService extends TypeOrmCrudService<Podcast> {
     );
 
     return allPodcastInSameCategory;
+  }
+
+  async logFile() {
+    try {
+      //const filePath = resolve('./fariTestedAccessoire.xlsx');
+      // const filePath = resolve('./TLV_ACCESSOIRES_QUALITY_CENTER_2025-05-07_0730.csv');
+      // const contents = await readFile(filePath, { encoding: 'utf8' });
+      // var json = this.filesToJson({
+      //   filename: './TLV_ACCESSOIRES_QUALITY_CENTER_2025-05-07_0730.csv',
+      //   raw: true,
+      // });
+      //  var boucle=json.map((el:any)=>{
+      //   return el.MODEL_LABEL=this.normalizeString(el.MODEL_LABEL)
+      //  })
+      //  return boucle
+      var json=this.normalizeString("Multi TV avec dÃ©codeur secondaire")
+        console.log(json);
+        console.log('Multi TV avec décodeur secondaire'==json)
+      // this.filterSales('2025-05-08', json);
+    } catch (err) {
+      console.error(err.message);
+    }
+  }
+
+  public async filterSales(date: string, sales: any[]) {
+    console.log('Les ventes enoyes ', sales);
+    const filteredSales = [];
+    // const allSales = await this.repo.find();
+    const allSales = this.filesToJson({
+      filename: './tableAccesoire.xlsx',
+      raw: true,
+    });
+    console.log("allsales@second",allSales)
+
+    for (const currentSale of sales) {
+      const currentAccessory = this.normalizeString(currentSale.accessoire);
+      let sale: any = allSales.find(
+        (storedSale: any) =>
+          storedSale.numeroCommande == currentSale.numeroCommande &&
+          storedSale.jour == currentSale.jour &&
+          this.normalizeString(storedSale.accessoire) == currentAccessory,
+      );
+      if (sale) {
+        if (sale.etatCommande == currentSale.etatCommande) {
+          continue;
+        }
+        currentSale['uuid'] = sale.uuid;
+        console.log('cuurentSale', currentSale);
+      }
+      filteredSales.push(currentSale);
+    }
+
+    return { filteredSales, total: filteredSales.length };
+  }
+  normalizeString(text: string): string {
+    return Buffer.from(text, 'latin1').toString('utf8').normalize('NFC').trim();
+  }
+
+  filesToJson({
+    filename,
+    tabname = undefined,
+    raw = false,
+    codepage = parseInt('ISO-8859-1'),
+  }: {
+    filename: string;
+    tabname?: string;
+    raw?: boolean;
+    codepage?: number;
+  }): any[] {
+    const workbook = XLSX.readFile(filename, {
+      raw,
+      codepage, // This shit makes the whole file to UTF-8. ! It Was a 4 hours long fcking BUG !
+    });
+
+    const tab = tabname ? tabname : workbook.SheetNames[0];
+    console.log(
+      `([UTILSHELPER * FilesToJson]) --> Opening File : [${filename}] - [${tab}]...`,
+    );
+    return XLSX.utils.sheet_to_json(workbook.Sheets[tab]);
   }
 }

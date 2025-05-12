@@ -7679,7 +7679,7 @@ xlsx-stream-reader@^1.1.1:
     tmp "^0.2.1"
     unzipper "^0.10.11"
 
-xlsx@^0.18.5:
+xlsx@0.18.5:
   version "0.18.5"
   resolved "https://registry.yarnpkg.com/xlsx/-/xlsx-0.18.5.tgz#16711b9113c848076b8a177022799ad356eba7d0"
   integrity sha512-dmg3LCjBPHZnQp5/F/+nnTa+miPJxUXB6vtk42YjBBKayDNagxGEeIdWApkYPOf3Z3pm3k62Knjzp7lMeTEtFQ==
