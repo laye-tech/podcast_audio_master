@@ -24,6 +24,8 @@ import { PodcastModule } from './podcast/podcast.module';
 import { Podcast } from './podcast/entities/podcast.entities';
 import { EpisodeModule } from './episode/episode.module';
 import { Episode } from './episode/entities/episode.entities';
+import { PlaylistModule } from './playlist/playlist.module';
+import { Playlist } from './playlist/entities/playlist.entities';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -35,7 +37,7 @@ import { Episode } from './episode/entities/episode.entities';
     username: process.env.DB0_username,
     password: process.env.DB0_password,
     database: process.env.DB0_database,
-    entities: [Users,Ged,GedLogs,Category,Tag,Podcast,Episode],
+    entities: [Users,Ged,GedLogs,Category,Tag,Podcast,Episode,Playlist],
     synchronize: true,
     // logging:true
   }),
@@ -46,7 +48,8 @@ import { Episode } from './episode/entities/episode.entities';
     CategoryModule,
     TagModule,
     PodcastModule,
-    EpisodeModule
+    EpisodeModule,
+    PlaylistModule
   ],
   controllers: [AppController],
   providers: [

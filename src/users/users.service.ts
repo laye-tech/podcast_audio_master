@@ -22,6 +22,9 @@ export class UsersService extends TypeOrmCrudService<Users> {
     this.logger = new Logger(UsersService.name);
   }
 
+  public exposeRepo() {
+    return this.repo;
+  }
   async createUserPodcast(
     user: UserDto,
     file: Express.Multer.File,
@@ -72,17 +75,16 @@ export class UsersService extends TypeOrmCrudService<Users> {
 
     const userOcm = await this.usersRepository.findOneBy({ login: login });
 
-    if (!userOcm) throw new ConflictException("L'utilisateur n\'existe pas ");
+    if (!userOcm) throw new ConflictException("L'utilisateur n'existe pas ");
 
-  
-      let documentUrl: Ged = await this.gedService.verifyDocInBaseAndMinioStorage(
-          {
-            uuid: userOcm.uuid,
-          },
-        );
-        let image = await this.gedService.previewDocumentWithUrlSigned(
-          documentUrl.url,
-        );
+    let documentUrl: Ged = await this.gedService.verifyDocInBaseAndMinioStorage(
+      {
+        uuid: userOcm.uuid,
+      },
+    );
+    let image = await this.gedService.previewDocumentWithUrlSigned(
+      documentUrl.url,
+    );
     userOcm.profileImgPath = image;
     return userOcm;
   }
