@@ -2,7 +2,7 @@ import { Body, Controller, Post, Req, UploadedFile, UseInterceptors } from '@nes
 import { EpisodeService } from './episode.service';
 import { Crud, CrudController } from '@dataui/crud';
 import { Episode } from './entities/episode.entities';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EpisodeDto } from './DtoEpisode/episode.dto';
 
@@ -29,6 +29,24 @@ export class EpisodeController implements CrudController<Episode>{
 
 
      @Post('/createEpisode')
+      @ApiOperation({ summary: 'Creér un épisode' })
+         @ApiConsumes('multipart/form-data')
+         @ApiBody({
+           schema: {
+             type: 'object',
+             properties: {
+               libelle: { type: 'string', example: 'nom de l\'episode ' },
+               description: { type: 'string', example: 'Description sympa de l\'episode' },
+               podcast_uuid: { type: 'string', example: 'cles primaire du podcast ' },
+               file: {
+                 type: 'string',
+                 format: 'binary',
+               },
+             },
+           },
+         })
+         @ApiResponse({ status: 200, description: 'Episode crée avec succes', type: Episode })
+         @ApiResponse({ status: 404, description: 'Episode non crée' })
       @UseInterceptors(FileInterceptor('file'))
       async createEpisode(
         @Body() dto: EpisodeDto,
