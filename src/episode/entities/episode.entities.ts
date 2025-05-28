@@ -38,8 +38,12 @@ export class Episode {
   })
   audioFile: string | null | {};
 
+  @ApiProperty()
+  @Column('character varying', { name: 'podcast_uuid' })
+  podcast_uuid: string;
+
   @ManyToOne(() => Podcast)
-  @JoinColumn({ name: 'podcast_uuid' })
+  @JoinColumn({ name: 'podcast' })
   podcast: Podcast;
 
   @ApiProperty()

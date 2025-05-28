@@ -54,7 +54,8 @@ export class EpisodeService extends TypeOrmCrudService<Episode> {
           this.logger.log(`-> 🚩 Podcast [${podcast.libelle}]found in database `);
       
           episode.userCreated = userPodcast;
-          episode.podcast=podcast
+          episode.podcast=podcast;
+          episode.podcast_uuid=episode.podcast_uuid;
       
           this.logger.log(
             `-> 🚩 Starting save in database : [${JSON.stringify(episode)}] `,
@@ -76,6 +77,37 @@ export class EpisodeService extends TypeOrmCrudService<Episode> {
             });
         }
 
+         /**
+          * Permet de recuperer tous les episodes d'un podcast
+          * sache que je t'aime Sala ❤️❤️❤️❤️❤️❤️
+          * @param data 
+          * @returns 
+          */
+          
+          async getAllEpisodeOwnByPodcast(
+            data: Partial<EpisodeDto>,
+          ): Promise<Episode[]> {
+        
+            this.logger.log(
+              `🎬 [getAllEpisodeOwnByPodcast] ➜ Recherche des épisodes pour le podcast UUID: ${data.podcast_uuid}`,
+            );
+          
+            const existingEpisode: Episode[] = await this.episodeRepository.find({
+              where: { podcast_uuid: data.podcast_uuid },
+            });
+        
+            if (!existingEpisode)
+              this.logger.warn(
+                `❌ Aucun épisode trouvé pour le podcast UUID: ${data.podcast_uuid}`,
+              );        
+              this.logger.log(
+                `✅ ${existingEpisode.length} épisode(s) trouvé(s) pour le podcast UUID: ${data.podcast_uuid}`,
+              );
+        
+
+            return existingEpisode;
+          }
+
 
         async getEpisodeByUuid(
             episode: Partial<EpisodeDto>,
@@ -94,11 +126,6 @@ export class EpisodeService extends TypeOrmCrudService<Episode> {
               `-> 🚩Episode succesfully found in database [${existingEpisode.libelle}] ⚠️...`,
             );
         
-            // let documentUrl: Ged = await this.gedService.verifyDocInBaseAndMinioStorage(
-            //   {
-            //     uuid: existingEpisode.uuid,
-            //   },
-            // );
             let audioFile = await this.gedService.previewDocument({uuid:existingEpisode.uuid},userConnected)
             existingEpisode.audioFile = audioFile;
             return existingEpisode;
