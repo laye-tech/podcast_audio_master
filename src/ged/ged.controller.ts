@@ -32,6 +32,11 @@ export class PreviewQueryDto {
   uuid: string;
 }
 
+export class DownloadQueryDto {
+  @ApiProperty({ description: 'UUID du document à télécharger' })
+  @IsUUID()
+  uuid: string;
+}
 @ApiTags('Ged')
 @ApiBearerAuth('access-token')
 @Crud({
@@ -49,15 +54,15 @@ export class PreviewQueryDto {
 @Controller('ged')
 export class GedController implements CrudController<Ged> {
   constructor(public service: GedService) {}
-  @Post('/saveDoc')
-  @UseInterceptors(FileInterceptor('file'))
-  async saveDoc(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() data: GedDto,
-    @Req() req,
-  ) {
-    return await this.service.saveDocumentUrl(data, file, req.user);
-  }
+  // @Post('/saveDoc')
+  // @UseInterceptors(FileInterceptor('file'))
+  // async saveDoc(
+  //   @UploadedFile() file: Express.Multer.File,
+  //   @Body() data: GedDto,
+  //   @Req() req,
+  // ) {
+  //   return await this.service.saveDocumentUrl(data, file, req.user);
+  // }
 
   @Put('/updateDoc')
   @UseInterceptors(FileInterceptor('file'))
@@ -69,38 +74,11 @@ export class GedController implements CrudController<Ged> {
     return await this.service.updateDocumentWithFile(data, file, req.user);
   }
 
-  @Put('/updateDocWithoutFile')
-  async updateDocWithoutFile(@Body() data: GedDto, @Req() req) {
-    return await this.service.updateDocumentWithoutFile(data, req.user);
-  }
+  // @Put('/updateDocWithoutFile')
+  // async updateDocWithoutFile(@Body() data: GedDto, @Req() req) {
+  //   return await this.service.updateDocumentWithoutFile(data, req.user);
+  // }
 
-  @Get('/docs')
-  async getDocs(@Query() query: Partial<GedDto>) {
-    return await this.service.getAllDocs({
-      // requester: query.requester,
-      // categorie: query.categorie,
-      // type_document: query.type_document,
-      // startDate: query.startDate,
-      // endDate: query.endDate,
-      // libelle: query.libelle,
-      // doc_tag: query.doc_tag ? query.doc_tag : '',
-      // permissions: typeof query.permissions === 'string' ? query.permissions.split(',').map(tag => tag.trim()) : []
-    });
-  }
-
-  @Post('/createBucket')
-  async makeBucket(@Body() bucket: string) {
-    return await this.service.createBucket(bucket);
-  }
-
-  //not used blocked by cors
-  @Delete('/delete')
-  async deleteDocument(@Query() query, @Req() req) {
-    if (!query.uuid) {
-      ErrorThrower.throwBadRequest();
-    }
-    return await this.service.deleteDocument(query.uuid, req.user);
-  }
 
   @Get('preview')
   async previewDocument(
@@ -120,9 +98,8 @@ export class GedController implements CrudController<Ged> {
   }
 
   @Get('download')
-  async downloadDocument(@Query() query, @Res() res: Response, @Req() req) {
+  async downloadDocument(@Query() query:DownloadQueryDto, @Res() res: Response, @Req() req) {
     const { stream, metadata } = await this.service.downloadDocument(
-      query.url,
       query.uuid,
       req.user,
     );

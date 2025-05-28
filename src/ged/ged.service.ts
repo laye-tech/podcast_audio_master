@@ -81,11 +81,11 @@ export class GedService extends TypeOrmCrudService<Ged> {
       );
 
       // 🔁 Lire le stream et créer un buffer
-    //   const chunks = [];
-    //   for await (const chunk of documentStream) {
-    //     chunks.push(chunk);
-    //   }
-    //   const buffer = Buffer.concat(chunks);
+      //   const chunks = [];
+      //   for await (const chunk of documentStream) {
+      //     chunks.push(chunk);
+      //   }
+      //   const buffer = Buffer.concat(chunks);
 
       let obj = {
         action: ActionType.CONSULTATION,
@@ -98,13 +98,13 @@ export class GedService extends TypeOrmCrudService<Ged> {
       this.logger.log(`📝 Détails du log:${JSON.stringify(obj)}`);
       await this.gedLogService.createLog(obj);
       return {
-          documentStream: documentStream,
-          metadata: metadata
-      }
-    //   return {
-    //     metadata,
-    //     base64: `data:${metadata.contentType};base64,${buffer.toString('base64')}`,
-    //   };
+        documentStream: documentStream,
+        metadata: metadata,
+      };
+      //   return {
+      //     metadata,
+      //     base64: `data:${metadata.contentType};base64,${buffer.toString('base64')}`,
+      //   };
     } catch (error) {
       console.error('Erreur complète:', error);
       throw new NotFoundException(`Document non trouvé: ${document}`);
@@ -124,17 +124,23 @@ export class GedService extends TypeOrmCrudService<Ged> {
     }
   }
 
-  async downloadDocument(url: string, uuid: string, user: any) {
+  async downloadDocument(uuid: string, user: any) {
     try {
-      const metadata = await this.minioService.getDocumentMetadata(
-        this.baseBucket,
-        url,
-      );
+      let urlDocument = await this.checkExistingDocument({ uuid: uuid });
 
-      const documentStream = await this.minioService.getDocumentStream(
-        this.baseBucket,
-        url,
-      );
+      let [metadata, documentStream] = await Promise.all([
+        this.minioService.getDocumentMetadata(this.baseBucket, urlDocument.url),
+        this.minioService.getDocumentStream(this.baseBucket, urlDocument.url),
+      ]);
+      // const metadata = await this.minioService.getDocumentMetadata(
+      //   this.baseBucket,
+      //   urlDocument.url,
+      // );
+
+      // const documentStream = await this.minioService.getDocumentStream(
+      //   this.baseBucket,
+      //   urlDocument.url,
+      // );
 
       let obj = {
         action: ActionType.TELECHARGEMENT,
@@ -152,7 +158,7 @@ export class GedService extends TypeOrmCrudService<Ged> {
         metadata: metadata,
       };
     } catch (error) {
-      throw new NotFoundException(`Document non trouvé: ${url}`);
+      throw new NotFoundException(`Document non trouvé: ${error}`);
     }
   }
 
@@ -174,9 +180,12 @@ export class GedService extends TypeOrmCrudService<Ged> {
         this.baseBucket,
         data,
       );
-      
-      this.logger.log('Object saved in bucket ',JSON.stringify(savedObjectInBucket));
-      
+
+      this.logger.log(
+        'Object saved in bucket ',
+        JSON.stringify(savedObjectInBucket),
+      );
+
       (data.url = savedObjectInBucket.fileName),
         (data.type_document = savedObjectInBucket.typeDocument);
       let saveToDatabase = await this.saveToDatabase(data);

@@ -16,7 +16,14 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Users } from './entities/users.entity';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
@@ -47,6 +54,33 @@ export class UsersController implements CrudController<Users> {
 
   @Public()
   @Post('/createUser')
+  @ApiOperation({ summary: 'Creér un utilisateur' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        login: {
+          type: 'string',
+          example: "Mettre un log de connexion exemple :fari ou 2050 ou Vito",
+        },
+        firstname: { type: 'string', example: 'Mettre ton prenom' },
+        name: { type: 'string', example: 'Mettre ton nom' },
+        email: { type: 'string', example: 'Mettre ton email' },
+        password_hash: {
+          type: 'string',
+          example:
+            'Mettre ton mot de passe avec des caracteres Maj et Minuscule exemple:FARi2810@',
+        },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Utilisateurs crée', type: Users })
+  @ApiResponse({ status: 404, description: 'Utilisateurs non crée' })
   @UseInterceptors(FileInterceptor('file'))
   async creatUserPodcast(
     @Body() dto: UserDto,
@@ -56,7 +90,11 @@ export class UsersController implements CrudController<Users> {
     return this.service.createUserPodcast(dto, file, req.user);
   }
 
-  @Get('/getUser')
+  @Post('/getUser')
+  @ApiOperation({ summary: 'Récupérer un utilisateur par son Login' })
+  @ApiBody({ type: UserDto, required: false }) // Si dto est partiel
+  @ApiResponse({ status: 200, description: 'Utilisateur trouvée', type: Users })
+  @ApiResponse({ status: 404, description: 'Utilisateur non trouvée' })
   async getUserPodcast(
     @Body() dto: Partial<UserDto>,
     @Req() req,
