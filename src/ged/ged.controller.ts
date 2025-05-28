@@ -16,7 +16,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { Ged } from './Entities/ged.entities';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { GedService } from './ged.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -27,13 +33,13 @@ import { IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PreviewQueryDto {
-  @ApiProperty({ description: 'UUID du document à prévisualiser' })
+  @ApiProperty({ description: 'UUID de l\'objet à prévisualiser' })
   @IsUUID()
   uuid: string;
 }
 
 export class DownloadQueryDto {
-  @ApiProperty({ description: 'UUID du document à télécharger' })
+  @ApiProperty({ description: 'UUID de l\'objet à télécharger' })
   @IsUUID()
   uuid: string;
 }
@@ -79,8 +85,10 @@ export class GedController implements CrudController<Ged> {
   //   return await this.service.updateDocumentWithoutFile(data, req.user);
   // }
 
-
   @Get('preview')
+  @ApiOperation({ summary: 'Récupérer un objet par son UUID' })
+  @ApiResponse({ status: 200, description: 'l\'objet trouvée'})
+  @ApiResponse({ status: 404, description: 'l\'objet non trouvée' })
   async previewDocument(
     @Query() query: PreviewQueryDto,
     @Res() res: Response,
@@ -98,7 +106,14 @@ export class GedController implements CrudController<Ged> {
   }
 
   @Get('download')
-  async downloadDocument(@Query() query:DownloadQueryDto, @Res() res: Response, @Req() req) {
+  @ApiOperation({ summary: 'Télécharger un objet par son UUID' })
+  @ApiResponse({ status: 200, description: 'l\'objet trouvée'})
+  @ApiResponse({ status: 404, description: 'l\'objet non trouvée' })
+  async downloadDocument(
+    @Query() query: DownloadQueryDto,
+    @Res() res: Response,
+    @Req() req,
+  ) {
     const { stream, metadata } = await this.service.downloadDocument(
       query.uuid,
       req.user,
@@ -113,15 +128,15 @@ export class GedController implements CrudController<Ged> {
     stream.pipe(res);
   }
 
-  @Patch('change')
-  async changeStateDocument(@Query() query, @Req() req) {
-    if (!(query.uuid || query.state)) {
-      ErrorThrower.throwBadRequest();
-    }
-    return await this.service.changeStateDocument(
-      query.uuid,
-      query.state,
-      req.user,
-    );
-  }
+  // @Patch('change')
+  // async changeStateDocument(@Query() query, @Req() req) {
+  //   if (!(query.uuid || query.state)) {
+  //     ErrorThrower.throwBadRequest();
+  //   }
+  //   return await this.service.changeStateDocument(
+  //     query.uuid,
+  //     query.state,
+  //     req.user,
+  //   );
+  // }
 }
