@@ -30,6 +30,8 @@ import { PlaylistUserModule } from './playlist-user/playlist-user.module';
 import { PlaylistUser } from './playlist-user/entities/playlistUser.entities';
 import { FavorisModule } from './favoris/favoris.module';
 import { FavoriUser } from './favoris/entities/favoris.entities';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { SubscriptionUser } from './subscription/entities/subscription.entities';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -41,7 +43,7 @@ import { FavoriUser } from './favoris/entities/favoris.entities';
     username: process.env.DB0_username,
     password: process.env.DB0_password,
     database: process.env.DB0_database,
-    entities: [Users,Ged,GedLogs,Category,Tag,Podcast,Episode,Playlist,PlaylistUser,FavoriUser],
+    entities: [Users,Ged,GedLogs,Category,Tag,Podcast,Episode,Playlist,PlaylistUser,FavoriUser,SubscriptionUser],
     synchronize: true,
     // logging:true
   }),
@@ -56,6 +58,7 @@ import { FavoriUser } from './favoris/entities/favoris.entities';
     PlaylistModule,
     PlaylistUserModule,
     FavorisModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [
