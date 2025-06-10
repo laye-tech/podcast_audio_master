@@ -10,6 +10,8 @@ import { PodcastModule } from 'src/podcast/podcast.module';
 @Module({
   imports: [TypeOrmModule.forFeature([Episode]), GedModule, UsersModule,PodcastModule],
   controllers: [EpisodeController],
-  providers: [EpisodeService]
+  providers: [EpisodeService],
+  exports:[EpisodeService]
+
 })
 export class EpisodeModule {}
