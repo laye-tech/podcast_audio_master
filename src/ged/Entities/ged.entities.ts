@@ -51,22 +51,13 @@ export class Ged {
     })
     url: string
 
-    // @ApiProperty()
-    // @Column('jsonb', { name: 'permissions', nullable: false })
-    // permissions: PermissionType | string | string[];
-
     @ApiProperty()
     @Column('character varying', { name: 'doc_author', length: 1000 })
     doc_author: string;
 
-
-    // @ApiProperty()
-    // @Column('jsonb', { name: 'doc_tag' })
-    // doc_tag: Record<string, string> | string;
-
-    //l'idee de ne pas garder une url de l'image dans chque table ,je veux les mettre tous dans la table ged ,
+    //l'idee de ne pas garder une url de l'image(objets) dans chque table ,je veux les mettre tous dans la table ged ,
     // maintenant qu'on'a plusieurs tables avec chacune ses propres metadonnees ,je denormalise en disant que fk_of_all_table va etre la cle primaire de la table proprietaire de 
-    //l'image du coup il devient une cle etrangere dans cette table.
+    //l'image(objet) du coup il devient une cle etrangere dans cette table.
     //De mon cote apres chaque save des infos de la table j'injecte le service j'attend la resolution de la promesse pour avoir l'id puis je save le doc 
     @ApiProperty()
     @Column('uuid', {

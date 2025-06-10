@@ -27,7 +27,9 @@ export class EpisodeService extends TypeOrmCrudService<Episode> {
         this.logger = new Logger(EpisodeService.name);
       }
 
-
+      public exposeRepo() {
+        return this.repo;
+      }
         async createEpisode(
           episode: EpisodeDto,
           file: Express.Multer.File,
