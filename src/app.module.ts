@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, Scope } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, Scope } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RequestService } from './request.service';
@@ -62,6 +62,7 @@ import { SubscriptionUser } from './subscription/entities/subscription.entities'
   ],
   controllers: [AppController],
   providers: [
+    Logger,
     AppService,
     RequestService,
     {
