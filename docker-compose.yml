@@ -1,39 +1,71 @@
-version: '3.5'
+version: "3.8"
 
 services:
-  db_podcast_laye_tech:
-    image: postgres
+  app:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: diopabdoulaye/podcast:cors
+    container_name: podcast_app
+    env_file: .env
+    ports:
+      - "2000:2000"   # app NestJS exposée sur localhost:2000
+    depends_on:
+      - db
+    networks:
+      - app-network
+    # command: ["node", "dist/main.js"]  # tu peux mettre "yarn start:dev" en dev
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
     restart: always
     environment:
-      - POSTGRES_PASSWORD=postgres
-    container_name: postgres
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      POSTGRES_USER: ${DB0_username}
+      POSTGRES_PASSWORD: ${DB0_password}
+      POSTGRES_DB: ${DB0_database}
     ports:
       - "5432:5432"
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: back_podcast_laye_tech
-    environment:
-      - PORT=2000  # ou utiliser ${PORT:-2000}
-    ports:
-      - "2000:2000"
-    depends_on:
-      - db_podcast_laye_tech
     volumes:
-      - ./src:/app/src  # À ajuster selon ton entrypoint NestJS
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: always
-    container_name: podcast_pg_admin_laye_tech
+  minio:
+    image: minio/minio:latest
+    container_name: minio
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+      MINIO_ROOT_USER: ${ACCESS_KEY_MINIO_PLATEFORME}
+      MINIO_ROOT_PASSWORD: ${SECRET_KEY_MINIO_PLATEFORME}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
     ports:
-      - "5050:80"
-    depends_on:
-      - db_podcast_laye_tech
+      - "9003:9003"   # API S3
+      - "9001:9001"   # Console web
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - app-network   
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8089:80"
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+    networks:
+      - app-network    
+
+volumes:
+  pgdata:
+  minio_data:
+  pgadmindata:
+
+networks:
+  app-network:
+    driver: bridge
