@@ -57,6 +57,7 @@ export class MinioClientService {
         'image/gif',
         'audio/wave',
         'audio/mpeg',
+        'image/jpeg'
       ].includes(file.mimetype.trim())
     ) {
       this.logger.error(`❌ Type de fichier non autorisé : ${file.mimetype}`);
@@ -243,6 +244,7 @@ export class MinioClientService {
       case 'png':
       case 'image/png':
       case 'image/gif':
+      case 'image/jpeg':
         typeDoc = TypeDocument.Png;
         break;
 
@@ -268,6 +270,12 @@ export class MinioClientService {
     objectName: string,
     expiry: number = 24 * 60 * 60,
   ): Promise<string> {
+    // Récupérer l'adresse et le port externes du serveur
+    const publicHost = this.configService.get<string>('MINIO_EXTERNAL_HOST');
+    const publicPort = this.configService.get<string>('MINIO_EXTERNAL_PORT');
+
+    // Le SDK Minio utilise le Host Header pour générer l'URL
+    const hostHeader = `${publicHost}:${publicPort}`;
     try {
       const url = await this.client.presignedUrl(
         'GET',
@@ -275,6 +283,7 @@ export class MinioClientService {
         objectName,
         expiry,
         {
+          Host:hostHeader,
           accessKey: this.configService.get('ACCESS_KEY_MINIO_PLATEFORME'),
           secretKey: this.configService.get('SECRET_KEY_MINIO_PLATEFORME'),
         },
